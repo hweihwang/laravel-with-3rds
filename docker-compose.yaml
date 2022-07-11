@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  workspace:
+      build:
+        context: ./docker/workspace
+        dockerfile: Dockerfile
+        args:
+          - NEW_RELIC_AGENT_VERSION=10.0.0.312
+          - NEW_RELIC_LICENSE_KEY=7583097a552d921d1aed3cd59bf86eda5da7NRAL
+          - NEW_RELIC_APPNAME=Test
+      ports:
+        - "9000:9000"
+      volumes:
+        - ./project/:/project/
+      networks:
+        - workspace
+  newrelic-deamon:
+      image: newrelic/newrelic-daemon:latest
+      networks:
+        - workspace
+
+networks:
+  workspace:
+    driver: bridge
