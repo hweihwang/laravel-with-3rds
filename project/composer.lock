@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5aa33c4c9c59a25291445d8226153066",
+    "content-hash": "b65d0a2c4d3623a25fc381e5d84bd273",
     "packages": [
         {
             "name": "brick/math",
@@ -1950,6 +1950,54 @@
                 "source": "https://github.com/nette/utils/tree/v3.2.7"
             },
             "time": "2022-01-24T11:29:14+00:00"
+        },
+        {
+            "name": "newrelic/monolog-enricher",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/newrelic/newrelic-monolog-logenricher-php.git",
+                "reference": "3c22b602d3528d034684a63201fd5fba580c7cad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/newrelic/newrelic-monolog-logenricher-php/zipball/3c22b602d3528d034684a63201fd5fba580c7cad",
+                "reference": "3c22b602d3528d034684a63201fd5fba580c7cad",
+                "shasum": ""
+            },
+            "require": {
+                "monolog/monolog": "^2",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4",
+                "squizlabs/php_codesniffer": ">=3.5"
+            },
+            "suggest": {
+                "ext-newrelic": "Adds support for viewing logs in context within the New Relic UI"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "NewRelic\\Monolog\\Enricher\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "New Relic PHP",
+                    "email": "php-agent@newrelic.com"
+                }
+            ],
+            "description": "Monolog components to enable New Relic Logs",
+            "support": {
+                "issues": "https://github.com/newrelic/newrelic-monolog-logenricher-php/issues",
+                "source": "https://github.com/newrelic/newrelic-monolog-logenricher-php/tree/2.0.0"
+            },
+            "time": "2021-03-15T16:46:34+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -7769,7 +7817,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.0.2"
+        "php": "^8.1"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"

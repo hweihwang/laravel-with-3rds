@@ -2,23 +2,34 @@ version: "3.9"
 
 services:
   workspace:
-      build:
-        context: ./docker/workspace
-        dockerfile: Dockerfile
-        args:
-          - NEW_RELIC_AGENT_VERSION=10.0.0.312
-          - NEW_RELIC_LICENSE_KEY=7583097a552d921d1aed3cd59bf86eda5da7NRAL
-          - NEW_RELIC_APPNAME=Test
-      ports:
-        - "9000:9000"
-      volumes:
-        - ./project/:/project/
-      networks:
-        - workspace
-  newrelic-deamon:
-      image: newrelic/newrelic-daemon:latest
-      networks:
-        - workspace
+    build:
+      context: ./docker/workspace
+      dockerfile: Dockerfile
+      args:
+        - NEW_RELIC_AGENT_VERSION=10.0.0.312
+    ports:
+      - "9001:9001"
+#    command: ["/bin/bash", "-c", "php artisan serve --host=0.0.0.0 --port=9001"]
+    platform: linux/amd64
+    volumes:
+      - ./project/:/project/
+      - ./docker/workspace/conf.d/php.ini:/usr/local/etc/php/conf.d/laravel.ini
+      - ./docker/workspace/conf.d/newrelic.ini:/usr/local/etc/php/conf.d/newrelic.ini
+      - ./docker/workspace/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./docker/workspace/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+    depends_on:
+      - "daemon"
+    networks:
+      - workspace
+  daemon:
+    build:
+      context: ./docker/daemon
+      dockerfile: Dockerfile
+      args:
+        - NEW_RELIC_AGENT_VERSION=10.0.0.312
+    platform: linux/amd64
+    networks:
+      - workspace
 
 networks:
   workspace:
