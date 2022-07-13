@@ -23,6 +23,8 @@ class NewRelicLogger
         $log->pushProcessor(new Processor);
         $handler = new Handler;
 
+        $handler->setFormatter(new NewRelicFormatter);
+
         // Optional - if you don't have the new relic php agent installed.
         //$handler->setLicenseKey('0123456789abcdef0123456789abcdef01234567');
 
@@ -33,8 +35,6 @@ class NewRelicLogger
         foreach ($log->getHandlers() as $handler) {
             $handler->pushProcessor([$this, 'includeMetaData']);
         }
-
-        dump($log);
 
         return $log;
     }

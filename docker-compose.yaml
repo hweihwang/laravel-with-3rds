@@ -6,9 +6,9 @@ services:
       context: ./docker/workspace
       dockerfile: Dockerfile
       args:
-        - NEW_RELIC_AGENT_VERSION=10.0.0.312
+        - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
     ports:
-      - "9001:9001"
+      - ${WORKSPACE_PORT}:9001
 #    command: ["/bin/bash", "-c", "php artisan serve --host=0.0.0.0 --port=9001"]
     platform: linux/amd64
     volumes:
@@ -26,7 +26,7 @@ services:
       context: ./docker/daemon
       dockerfile: Dockerfile
       args:
-        - NEW_RELIC_AGENT_VERSION=10.0.0.312
+        - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
     platform: linux/amd64
     networks:
       - workspace
