@@ -9,7 +9,7 @@ services:
         - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
     ports:
       - ${WORKSPACE_PORT}:9001
-#    command: ["/bin/bash", "-c", "php artisan serve --host=0.0.0.0 --port=9001"]
+    #    command: ["/bin/bash", "-c", "php artisan serve --host=0.0.0.0 --port=9001"]
     platform: linux/amd64
     volumes:
       - ./project/:/project/
@@ -21,6 +21,39 @@ services:
       - "daemon"
     networks:
       - workspace
+  elasticsearch:
+    build:
+      context: ./docker/elasticsearch
+      dockerfile: Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./docker/elasticsearch/data:/usr/share/elasticsearch/data:z
+    ports:
+      - ${ELASTIC_PORT}:9200
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      discovery.type: single-node
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    networks:
+      - workspace
+  kibana:
+    build:
+      context: ./docker/kibana
+      dockerfile: Dockerfile
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./docker/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+    networks:
+      - workspace
+    depends_on:
+      - elasticsearch
   daemon:
     build:
       context: ./docker/daemon
