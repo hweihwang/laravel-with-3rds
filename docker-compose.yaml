@@ -17,43 +17,36 @@ services:
       - ./docker/workspace/conf.d/newrelic.ini:/usr/local/etc/php/conf.d/newrelic.ini
       - ./docker/workspace/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
       - ./docker/workspace/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
-    depends_on:
-      - "daemon"
     networks:
-      - workspace
+      - laravel-3rd-party
   elasticsearch:
-    build:
-      context: ./docker/elasticsearch
-      dockerfile: Dockerfile
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: elasticsearch:8.3.2
+    container_name: elasticsearch_${APP_NAME}
+    restart: unless-stopped
+    tty: true
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     volumes:
       - ./docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - ./docker/elasticsearch/data:/usr/share/elasticsearch/data:z
+      - ./docker/elasticsearch/data:/usr/share/elasticsearch/data
     ports:
       - ${ELASTIC_PORT}:9200
-    environment:
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      discovery.type: single-node
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
     networks:
-      - workspace
+      - laravel-3rd-party
   kibana:
-    build:
-      context: ./docker/kibana
-      dockerfile: Dockerfile
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    image: kibana:8.3.2
+    container_name: kibana_${APP_NAME}
+    restart: unless-stopped
+    tty: true
     volumes:
       - ./docker/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - ${KIBANA_PORT}:5601
     environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
+      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
     networks:
-      - workspace
-    depends_on:
-      - elasticsearch
+      - laravel-3rd-party
   daemon:
     build:
       context: ./docker/daemon
@@ -62,8 +55,8 @@ services:
         - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
     platform: linux/amd64
     networks:
-      - workspace
+      - laravel-3rd-party
 
 networks:
-  workspace:
+  laravel-3rd-party:
     driver: bridge
