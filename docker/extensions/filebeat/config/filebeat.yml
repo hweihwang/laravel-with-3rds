@@ -1,0 +1,35 @@
+filebeat.inputs:
+  - type: filestream
+    id: laravel_3rd_party_logs
+    multiline.type: pattern
+    multiline.pattern: '^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]'
+    multiline.negate: true
+    multiline.match: after
+    paths:
+      - /var/logs/external_logs/laravel_3rd_party_logs/*.log
+
+
+#filebeat.autodiscover:
+#  providers:
+#    # The Docker autodiscover provider automatically retrieves logs from Docker
+#    # containers as they start and stop.
+#    - type: docker
+#      hints.enabled: true
+
+#processors:
+#  - add_cloud_metadata: ~
+
+output:
+  logstash:
+    hosts:
+      - logstash:5044
+    username: logstash_internal
+    password: ${LOGSTASH_INTERNAL_PASSWORD}
+#  Send to logstash instead of Elasticsearch.
+#output.elasticsearch:
+#  hosts: ['http://elasticsearch:9200']
+#  username: elastic
+#  password: ${ELASTIC_PASSWORD}
+
+http.enabled: true
+http.host: 0.0.0.0

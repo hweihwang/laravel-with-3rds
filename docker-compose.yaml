@@ -7,6 +7,9 @@ services:
       dockerfile: Dockerfile
     #      args:
     #        - NEW_RELIC_AGENT_VERSION=${NEW_RELIC_AGENT_VERSION}
+    container_name: workspace_${APP_NAME}
+    restart: unless-stopped
+    tty: true
     ports:
       - ${WORKSPACE_PORT}:9001
     #    command: ["/bin/bash", "-c", "php artisan serve --host=0.0.0.0 --port=9001"]
@@ -17,6 +20,7 @@ services:
       #      - ./docker/workspace/conf.d/newrelic.ini:/usr/local/etc/php/conf.d/newrelic.ini
       - ./docker/workspace/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
       - ./docker/workspace/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+      - ./laravel_3rd_party_logs/:/project/storage/logs/
     networks:
       - laravel-3rd-party
   elasticsearch:
@@ -43,9 +47,10 @@ services:
     container_name: helper_${APP_NAME}
     command: >
       sh -c  
-        'curl -s -X POST -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_SYSTEM_PASSWORD}\"}" &&
-         curl -s -X POST -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/logstash_internal/_password -d "{\"password\":\"${LOGSTASH_INTERNAL_PASSWORD}\"}"'
-#    restart: on-failure
+         'curl -s -X POST -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_SYSTEM_PASSWORD}\"}" &&
+          curl -s -X POST -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://elasticsearch:9200/_security/role/logstash_writer -d "{\"cluster\":[\"manage_index_templates\",\"monitor\",\"all\"],\"indices\":[{\"names\":[\"logstash-*\",\"lg-Monitor-*\",\"lg-OpenWrt-*\",\"*\"],\"privileges\":[\"write\",\"delete\",\"create_index\",\"delete_index\",\"index\",\"manage\",\"create\",\"all\"]}]}" &&
+          curl -s -X POST -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/logstash_internal -d "{\"password\":\"${LOGSTASH_INTERNAL_PASSWORD}\",\"roles\":[\"logstash_writer\"],\"full_name\":\"InternalLogstashUser\"}"'
+    restart: on-failure
     depends_on:
       - elasticsearch
     networks:
@@ -81,10 +86,38 @@ services:
     volumes:
       - ./docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
     depends_on:
       - helper
     networks:
       - laravel-3rd-party
+  filebeat:
+    build:
+      context: ./docker/extensions/filebeat/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    user: root
+    command:
+      # Log to stderr.
+      - -e
+      # Disable config file permissions checks. Allows mounting
+      # 'config/filebeat.yml' even if it's not owned by root.
+      # see: https://www.elastic.co/guide/en/beats/libbeat/current/config-file-permissions.html
+      - --strict.perms=false
+    container_name: filebeat_${APP_NAME}
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./docker/extensions/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./laravel_3rd_party_logs/:/var/logs/external_logs/laravel_3rd_party_logs/
+    networks:
+      - laravel-3rd-party
+    depends_on:
+      - logstash
 #  daemon:
 #    build:
 #      context: ./docker/daemon
